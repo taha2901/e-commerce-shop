@@ -1,5 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:ecommerce_app/core/utils/app_colors.dart';
 import 'package:ecommerce_app/features/cart/ui/cart_page.dart';
 import 'package:ecommerce_app/features/favourite/ui/favourite_page.dart';
 import 'package:ecommerce_app/features/home/ui/home_page.dart';

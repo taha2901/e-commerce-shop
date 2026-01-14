@@ -15,13 +15,21 @@ For _fastlane_ installation instructions, see [Installing _fastlane_](https://do
 
 ## Android
 
-### android firebase_distribution
+### android build_apk
 
 ```sh
-[bundle exec] fastlane android firebase_distribution
+[bundle exec] fastlane android build_apk
 ```
 
-Lane For Android Firebase App Distribution
+Build release APK for production
+
+### android upload_drive
+
+```sh
+[bundle exec] fastlane android upload_drive
+```
+
+Build and upload APK to Google Drive
 
 ----
 
