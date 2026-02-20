@@ -1,110 +1,109 @@
-import 'package:ecommerce_app/core/utils/app_colors.dart';
 import 'package:ecommerce_app/features/admin/logic/order/order_cubit.dart';
 import 'package:ecommerce_app/features/admin/logic/order/order_state.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'admin_theme.dart';
 
 class AdminOrderManagement extends StatefulWidget {
-  const AdminOrderManagement({Key? key}) : super(key: key);
+  const AdminOrderManagement({super.key});
 
   @override
   State<AdminOrderManagement> createState() => _AdminOrderManagementState();
 }
 
 class _AdminOrderManagementState extends State<AdminOrderManagement> {
-  final TextEditingController _searchController = TextEditingController();
   String _currentFilter = 'all';
+
+  static const _filters = [
+    ('all', 'الكل'),
+  
+  ];
 
   @override
   void initState() {
     super.initState();
-    // تحميل البيانات الأولية
     context.read<OrdersCubit>().loadOrders();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('إدارة الطلبات'),
-        backgroundColor: AppColors.primary,
-        foregroundColor: Colors.white,
-      ),
+      backgroundColor: Colors.transparent,
+      appBar: AdminAppBar(title: 'إدارة الطلبات'),
       body: Column(
         children: [
-          // شريط البحث
+          // Search
           Padding(
-            padding: EdgeInsets.all(16.w),
-            child: TextField(
-              controller: _searchController,
-              decoration: InputDecoration(
-                hintText: 'ابحث برقم الطلب...',
-                prefixIcon: const Icon(Icons.search),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8.r),
-                ),
-              ),
-              onChanged: (value) {
-                context.read<OrdersCubit>().searchOrders(value);
-              },
+            padding: EdgeInsets.fromLTRB(16.w, 14.h, 16.w, 8.h),
+            child: AdminSearchBar(
+              hint: 'ابحث برقم الطلب...',
+              onChanged: (v) => context.read<OrdersCubit>().searchOrders(v),
             ),
           ),
 
-          // عوامل التصفية
+          // Filter Chips
           SizedBox(
-            height: 50.h,
+            height: 44.h,
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: EdgeInsets.symmetric(horizontal: 16.w),
-              children: [
-                _buildFilterChip('الكل', 'all'),
-                SizedBox(width: 8.w),
-                _buildFilterChip('قيد الانتظار', 'pending'),
-                SizedBox(width: 8.w),
-                _buildFilterChip('قيد المعالجة', 'processing'),
-                SizedBox(width: 8.w),
-                _buildFilterChip('تم الشحن', 'shipped'),
-                SizedBox(width: 8.w),
-                _buildFilterChip('تم التسليم', 'delivered'),
-              ],
+              children: _filters.map((f) {
+                final isActive = _currentFilter == f.$1;
+                final color = _statusColor(f.$1);
+                return Padding(
+                  padding: EdgeInsets.only(right: 8.w),
+                  child: GestureDetector(
+                    onTap: () {
+                      setState(() => _currentFilter = f.$1);
+                      context.read<OrdersCubit>().loadOrders(statusFilter: f.$1);
+                    },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 8.h),
+                      decoration: BoxDecoration(
+                        color: isActive
+                            ? color.withOpacity(0.15)
+                            : context.adminCard,
+                        borderRadius: BorderRadius.circular(20.r),
+                        border: Border.all(
+                          color: isActive ? color : context.adminBorder,
+                          width: isActive ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Text(
+                        f.$2,
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          fontWeight: isActive ? FontWeight.w700 : FontWeight.w500,
+                          color: isActive ? color : context.adminTextSecondary,
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              }).toList(),
             ),
           ),
 
-          // قائمة الطلبات
+          SizedBox(height: 8.h),
+
+          // Orders List
           Expanded(
             child: BlocBuilder<OrdersCubit, OrdersState>(
               builder: (context, state) {
                 if (state is OrdersLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return Center(child: CircularProgressIndicator(color: AdminColors.accent));
                 } else if (state is OrdersError) {
-                  return Center(child: Text(state.message));
+                  return _buildErrorState(state.message);
                 } else if (state is OrdersLoaded) {
                   return _buildOrdersList(state.orders);
                 }
-                return const Center(child: Text('لا توجد بيانات'));
+                return const SizedBox();
               },
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildFilterChip(String label, String value) {
-    return FilterChip(
-      label: Text(label),
-      selected: _currentFilter == value,
-      onSelected: (selected) {
-        setState(() {
-          _currentFilter = value;
-        });
-        context.read<OrdersCubit>().loadOrders(statusFilter: value);
-      },
-      backgroundColor: Colors.grey[200],
-      selectedColor: AppColors.primary,
-      labelStyle: TextStyle(
-        color: _currentFilter == value ? Colors.white : Colors.black,
       ),
     );
   }
@@ -115,15 +114,15 @@ class _AdminOrderManagementState extends State<AdminOrderManagement> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              Icons.shopping_bag_outlined,
-              size: 60.r,
-              color: Colors.grey,
-            ),
-            SizedBox(height: 16.h),
+            Icon(Icons.shopping_bag_outlined, size: 56.r, color: context.adminTextSecondary),
+            SizedBox(height: 12.h),
             Text(
               'لا توجد طلبات',
-              style: TextStyle(fontSize: 16.sp),
+              style: TextStyle(
+                fontSize: 15.sp,
+                color: context.adminTextSecondary,
+                fontWeight: FontWeight.w500,
+              ),
             ),
           ],
         ),
@@ -131,69 +130,103 @@ class _AdminOrderManagementState extends State<AdminOrderManagement> {
     }
 
     return ListView.builder(
-      padding: EdgeInsets.all(16.w),
+      padding: EdgeInsets.fromLTRB(16.w, 4.h, 16.w, 20.h),
       itemCount: orders.length,
-      itemBuilder: (context, index) {
-        final order = orders[index];
-        return _buildOrderCard(order);
-      },
+      itemBuilder: (_, i) => _buildOrderCard(orders[i]),
     );
   }
 
   Widget _buildOrderCard(Map<String, dynamic> order) {
-    return Card(
+    final status = order['status'] as String?;
+    final color = _statusColor(status);
+    final statusLabel = _statusText(status);
+    final orderId = order['order_id'] ?? order['id'] ?? '—';
+    final total = order['total']?.toStringAsFixed(2) ?? '0.00';
+
+    return Container(
       margin: EdgeInsets.only(bottom: 12.h),
+      decoration: BoxDecoration(
+        color: context.adminCard,
+        borderRadius: BorderRadius.circular(16.r),
+        border: Border.all(color: context.adminBorder),
+        boxShadow: [
+          BoxShadow(
+            color: AdminColors.accent.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
       child: Padding(
         padding: EdgeInsets.all(16.w),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Header row
             Row(
               children: [
-                Text(
-                  order['order_id'] ?? order['id'],
-                  style: TextStyle(
-                    fontSize: 16.sp,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const Spacer(),
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 4.h),
+                  padding: EdgeInsets.all(8.w),
                   decoration: BoxDecoration(
-                    color: _getStatusColor(order['status']).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12.r),
+                    color: color.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(10.r),
                   ),
-                  child: Text(
-                    _getStatusText(order['status']),
-                    style: TextStyle(
-                      fontSize: 12.sp,
-                      color: _getStatusColor(order['status']),
-                    ),
+                  child: Icon(Icons.receipt_long_outlined, color: color, size: 18.r),
+                ),
+                SizedBox(width: 10.w),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        '#$orderId',
+                        style: TextStyle(
+                          fontSize: 14.sp,
+                          fontWeight: FontWeight.w800,
+                          color: context.adminTextPrimary,
+                        ),
+                      ),
+                      Text(
+                        order['username'] ?? 'غير معروف',
+                        style: TextStyle(
+                          fontSize: 12.sp,
+                          color: context.adminTextSecondary,
+                        ),
+                      ),
+                    ],
                   ),
                 ),
+                StatusBadge(label: statusLabel, color: color),
               ],
             ),
-            SizedBox(height: 8.h),
-            Text('العميل: ${order['username'] ?? 'غير معروف'}'),
-            SizedBox(height: 4.h),
-            Text('العناصر: ${order['items_count'] ?? 0}'),
-            SizedBox(height: 4.h),
-            Text('المجموع: \$${order['total']?.toStringAsFixed(2) ?? '0.00'}'),
             SizedBox(height: 12.h),
+            Divider(color: context.adminDivider, height: 1),
+            SizedBox(height: 12.h),
+            // Info row
+            Row(
+              children: [
+                _infoChip(Icons.shopping_cart_outlined, '${order['items_count'] ?? 0} عناصر'),
+                SizedBox(width: 12.w),
+                _infoChip(Icons.payments_outlined, '\$$total', color: AdminColors.accent),
+              ],
+            ),
+            SizedBox(height: 12.h),
+            // Actions
             Row(
               children: [
                 Expanded(
-                  child: OutlinedButton(
-                    onPressed: () => _showOrderDetails(order),
-                    child: const Text('التفاصيل'),
+                  child: _OutlinedBtn(
+                    label: 'التفاصيل',
+                    icon: Icons.visibility_outlined,
+                    onTap: () => _showOrderDetails(order),
                   ),
                 ),
                 SizedBox(width: 8.w),
                 Expanded(
-                  child: ElevatedButton(
-                    onPressed: () => _showUpdateStatusDialog(order),
-                    child: const Text('تحديث الحالة'),
+                  child: _FilledBtn(
+                    label: 'تحديث الحالة',
+                    icon: Icons.update_rounded,
+                    onTap: () => _showUpdateStatusDialog(order),
                   ),
                 ),
               ],
@@ -204,152 +237,293 @@ class _AdminOrderManagementState extends State<AdminOrderManagement> {
     );
   }
 
-  Color _getStatusColor(String? status) {
-    switch (status) {
-      case 'pending':
-        return Colors.orange;
-      case 'processing':
-        return Colors.blue;
-      case 'shipped':
-        return Colors.purple;
-      case 'delivered':
-        return Colors.green;
-      default:
-        return Colors.grey;
-    }
+  Widget _infoChip(IconData icon, String label, {Color? color}) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 14.r, color: color ?? context.adminTextSecondary),
+        SizedBox(width: 4.w),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12.sp,
+            color: color ?? context.adminTextSecondary,
+            fontWeight: color != null ? FontWeight.w700 : FontWeight.w500,
+          ),
+        ),
+      ],
+    );
   }
 
-  String _getStatusText(String? status) {
-    switch (status) {
-      case 'pending':
-        return 'قيد الانتظار';
-      case 'processing':
-        return 'قيد المعالجة';
-      case 'shipped':
-        return 'تم الشحن';
-      case 'delivered':
-        return 'تم التسليم';
-      default:
-        return 'غير محدد';
-    }
+  Widget _buildErrorState(String message) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.error_outline_rounded, size: 48.r, color: AdminColors.danger),
+          SizedBox(height: 12.h),
+          Text(message, style: TextStyle(color: AdminColors.danger, fontSize: 14.sp)),
+        ],
+      ),
+    );
   }
 
   void _showOrderDetails(Map<String, dynamic> order) {
     showDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: Text('تفاصيل الطلب ${order['order_id'] ?? order['id']}'),
-        content: SingleChildScrollView(
+      builder: (ctx) => Dialog(
+        backgroundColor: context.adminCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+        child: Padding(
+          padding: EdgeInsets.all(24.w),
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _buildDetailRow('العميل:', order['username'] ?? 'غير معروف'),
-              _buildDetailRow('رقم الطلب:', order['order_id'] ?? order['id']),
-              _buildDetailRow('الحالة:', _getStatusText(order['status'])),
-              _buildDetailRow('العناصر:', '${order['items_count'] ?? 0}'),
-              _buildDetailRow('المجموع:', '\$${order['total']?.toStringAsFixed(2) ?? '0.00'}'),
-              if (order['location'] != null)
-                _buildDetailRow('العنوان:', order['location']['address'] ?? 'لا يوجد عنوان'),
+              Text(
+                'تفاصيل الطلب',
+                style: TextStyle(
+                  fontSize: 17.sp,
+                  fontWeight: FontWeight.w800,
+                  color: context.adminTextPrimary,
+                ),
+              ),
+              SizedBox(height: 4.h),
+              Text(
+                '#${order['order_id'] ?? order['id']}',
+                style: TextStyle(
+                  fontSize: 13.sp,
+                  color: AdminColors.accent,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              SizedBox(height: 16.h),
+              Divider(color: context.adminDivider),
+              SizedBox(height: 12.h),
+              _detailRow('العميل', order['username'] ?? '—'),
+              SizedBox(height: 8.h),
+              _detailRow('الحالة', _statusText(order['status'])),
+              SizedBox(height: 8.h),
+              _detailRow('العناصر', '${order['items_count'] ?? 0}'),
+              SizedBox(height: 8.h),
+              _detailRow('المجموع', '\$${order['total']?.toStringAsFixed(2) ?? '0.00'}'),
+              if (order['location'] != null) ...[
+                SizedBox(height: 8.h),
+                _detailRow('العنوان', order['location']['address'] ?? '—'),
+              ],
+              SizedBox(height: 20.h),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: () => Navigator.pop(ctx),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AdminColors.accent,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(10.r),
+                    ),
+                  ),
+                  child: const Text('إغلاق'),
+                ),
+              ),
             ],
           ),
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('إغلاق'),
-          ),
-        ],
       ),
     );
   }
 
-  Widget _buildDetailRow(String label, String value) {
-    return Padding(
-      padding: EdgeInsets.symmetric(vertical: 4.h),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SizedBox(
-            width: 80.w,
-            child: Text(
-              label,
-              style: const TextStyle(fontWeight: FontWeight.bold),
+  Widget _detailRow(String label, String value) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 70.w,
+          child: Text(
+            '$label:',
+            style: TextStyle(
+              fontSize: 13.sp,
+              color: context.adminTextSecondary,
+              fontWeight: FontWeight.w600,
             ),
           ),
-          Expanded(child: Text(value)),
-        ],
-      ),
+        ),
+        Expanded(
+          child: Text(
+            value,
+            style: TextStyle(
+              fontSize: 13.sp,
+              color: context.adminTextPrimary,
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
     );
   }
 
   void _showUpdateStatusDialog(Map<String, dynamic> order) {
-    String selectedStatus = order['status'] ?? 'pending';
-
+    String selected = order['status'] ?? 'pending';
     showDialog(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text('تحديث حالة الطلب ${order['order_id'] ?? order['id']}'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              RadioListTile<String>(
-                title: const Text('قيد الانتظار'),
-                value: 'pending',
-                groupValue: selectedStatus,
-                onChanged: (value) {
-                  setState(() {
-                    selectedStatus = value!;
-                  });
-                },
-              ),
-              RadioListTile<String>(
-                title: const Text('قيد المعالجة'),
-                value: 'processing',
-                groupValue: selectedStatus,
-                onChanged: (value) {
-                  setState(() {
-                    selectedStatus = value!;
-                  });
-                },
-              ),
-              RadioListTile<String>(
-                title: const Text('تم الشحن'),
-                value: 'shipped',
-                groupValue: selectedStatus,
-                onChanged: (value) {
-                  setState(() {
-                    selectedStatus = value!;
-                  });
-                },
-              ),
-              RadioListTile<String>(
-                title: const Text('تم التسليم'),
-                value: 'delivered',
-                groupValue: selectedStatus,
-                onChanged: (value) {
-                  setState(() {
-                    selectedStatus = value!;
-                  });
-                },
-              ),
-            ],
+      builder: (ctx) => StatefulBuilder(
+        builder: (ctx, setDialogState) => Dialog(
+          backgroundColor: context.adminCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20.r)),
+          child: Padding(
+            padding: EdgeInsets.all(24.w),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'تحديث الحالة',
+                  style: TextStyle(
+                    fontSize: 17.sp,
+                    fontWeight: FontWeight.w800,
+                    color: context.adminTextPrimary,
+                  ),
+                ),
+                SizedBox(height: 16.h),
+                ...['pending', 'processing', 'shipped', 'delivered'].map((s) {
+                  final color = _statusColor(s);
+                  final isSelected = selected == s;
+                  return GestureDetector(
+                    onTap: () => setDialogState(() => selected = s),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      margin: EdgeInsets.only(bottom: 8.h),
+                      padding: EdgeInsets.symmetric(horizontal: 14.w, vertical: 12.h),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? color.withOpacity(0.1)
+                            : context.isDark
+                                ? Colors.white.withOpacity(0.03)
+                                : Colors.grey.withOpacity(0.04),
+                        borderRadius: BorderRadius.circular(12.r),
+                        border: Border.all(
+                          color: isSelected ? color : context.adminBorder,
+                          width: isSelected ? 1.5 : 1,
+                        ),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(
+                            isSelected ? Icons.radio_button_checked : Icons.radio_button_off,
+                            color: isSelected ? color : context.adminTextSecondary,
+                            size: 18.r,
+                          ),
+                          SizedBox(width: 10.w),
+                          Text(
+                            _statusText(s),
+                            style: TextStyle(
+                              fontSize: 13.sp,
+                              fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
+                              color: isSelected ? color : context.adminTextPrimary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }),
+                SizedBox(height: 8.h),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: Text('إلغاء',
+                            style: TextStyle(color: context.adminTextSecondary)),
+                      ),
+                    ),
+                    SizedBox(width: 8.w),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () {
+                          context.read<OrdersCubit>().updateOrderStatus(order['id'], selected);
+                          Navigator.pop(ctx);
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AdminColors.accent,
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10.r),
+                          ),
+                        ),
+                        child: const Text('تحديث'),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('إلغاء'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                context.read<OrdersCubit>().updateOrderStatus(order['id'], selectedStatus);
-                Navigator.pop(context);
-              },
-              child: const Text('تحديث'),
-            ),
-          ],
         ),
+      ),
+    );
+  }
+
+  Color _statusColor(String? status) {
+    switch (status) {
+      case 'pending': return AdminColors.warning;
+      case 'processing': return AdminColors.info;
+      case 'shipped': return AdminColors.accent;
+      case 'delivered': return AdminColors.success;
+      default: return AdminColors.info;
+    }
+  }
+
+  String _statusText(String? status) {
+    switch (status) {
+      case 'pending': return 'قيد الانتظار';
+      case 'processing': return 'قيد المعالجة';
+      case 'shipped': return 'تم الشحن';
+      case 'delivered': return 'تم التسليم';
+      default: return 'غير محدد';
+    }
+  }
+}
+
+// ─── Button helpers ───────────────────────────────────────
+class _OutlinedBtn extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+  const _OutlinedBtn({required this.label, required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, size: 14),
+      label: Text(label, style: const TextStyle(fontSize: 12)),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: context.adminTextPrimary,
+        side: BorderSide(color: context.adminBorder),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+      ),
+    );
+  }
+}
+
+class _FilledBtn extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final VoidCallback onTap;
+  const _FilledBtn({required this.label, required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return ElevatedButton.icon(
+      onPressed: onTap,
+      icon: Icon(icon, size: 14),
+      label: Text(label, style: const TextStyle(fontSize: 12)),
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AdminColors.accent,
+        foregroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+        padding: const EdgeInsets.symmetric(vertical: 10),
       ),
     );
   }

@@ -20,11 +20,26 @@ class SeeAllSectionHeader extends StatelessWidget {
             color: theme.colorScheme.onBackground, // ✅ بدل اللون الثابت
           ),
         ),
-        Text(
-          tr(LocaleKeys.seeAll),
-          style: theme.textTheme.labelLarge!.copyWith(
-            color: theme.colorScheme.primary, // ✅ يتغير مع اللايت/دارك
-            fontWeight: FontWeight.w600,
+        GestureDetector(
+          onTap: () {
+            // TODO: navigate to all products
+          },
+          child: Row(
+            children: [
+              Text(
+                tr(LocaleKeys.seeAll),
+                style: theme.textTheme.labelLarge!.copyWith(
+                  color: theme.colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(width: 2),
+              Icon(
+                Icons.arrow_forward_ios_rounded,
+                size: 12,
+                color: theme.colorScheme.primary,
+              ),
+            ],
           ),
         ),
       ],

@@ -181,7 +181,7 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
                     borderRadius: BorderRadius.circular(12),
                     boxShadow: [
                       BoxShadow(
-                        color: theme.shadowColor!.withOpacity(0.1),
+                        color: (theme.shadowColor ?? Colors.black).withOpacity(0.1),
                         spreadRadius: 2,
                         blurRadius: 8,
                         offset: const Offset(0, 2),
@@ -229,7 +229,7 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
               decoration: BoxDecoration(
                 color: theme.cardColor,
                 borderRadius: const BorderRadius.only(topLeft: Radius.circular(20), topRight: Radius.circular(20)),
-                boxShadow: [BoxShadow(color: theme.shadowColor!.withOpacity(0.1), spreadRadius: 2, blurRadius: 10, offset: const Offset(0, -2))],
+                boxShadow: [BoxShadow(color: (theme.shadowColor ?? Colors.black).withOpacity(0.1), spreadRadius: 2, blurRadius: 10, offset: const Offset(0, -2))],
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
@@ -251,20 +251,31 @@ class _LocationPickerWidgetState extends State<LocationPickerWidget> {
                     ),
                   ),
                   SizedBox(height: 20.h),
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56.h,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        widget.onLocationSelected(_currentLocation, _currentAddress);
-                        Navigator.of(context).pop();
-                      },
-                      style: ElevatedButton.styleFrom(
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                      ),
-                      child: Text('Confirm Location', style: theme.textTheme.bodyLarge?.copyWith(color: Colors.white)),
-                    ),
-                  ),
+                SizedBox(
+  width: double.infinity,
+  height: 56.h,
+  child: ElevatedButton(
+    onPressed: () {
+      widget.onLocationSelected(_currentLocation, _currentAddress);
+      Navigator.of(context).pop();
+    },
+    style: ElevatedButton.styleFrom(
+      backgroundColor: theme.colorScheme.primary, // لون الزر يتوافق مع Theme
+      foregroundColor: theme.colorScheme.onPrimary, // لون النص مناسب للزر
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+    ),
+    child: Text(
+      'Confirm Location',
+      style: theme.textTheme.bodyLarge?.copyWith(
+        color: theme.colorScheme.onPrimary, // نص متوافق مع لون الزر
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+  ),
+)
+
                 ],
               ),
             ),

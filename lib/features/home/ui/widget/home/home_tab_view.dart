@@ -40,6 +40,29 @@ class HomeTabView extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 12.0),
                     child: Column(
                       children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(4, 4, 4, 16),
+                          child: TextField(
+                            readOnly: true, // لو هتعمل search page منفصلة
+                            onTap: () {
+                              // TODO: navigate to search page
+                            },
+                            decoration: InputDecoration(
+                              hintText: 'Search products...',
+                              prefixIcon: const Icon(Icons.search_rounded),
+                              filled: true,
+                              fillColor: theme.colorScheme.surfaceVariant
+                                  .withOpacity(0.5),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                borderSide: BorderSide.none,
+                              ),
+                              contentPadding:
+                                  const EdgeInsets.symmetric(vertical: 14),
+                            ),
+                          ),
+                        ),
+
                         /// 🔹 السلايدر
                         ProductImageCarousel(state: state),
                         SizedBox(height: 24.0.h),

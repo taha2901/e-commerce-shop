@@ -1,6 +1,5 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:ecommerce_app/core/widget/custom_app_bar.dart';
-import 'package:ecommerce_app/core/utils/app_colors.dart';
 import 'package:ecommerce_app/features/home/logic/category_cubit/category_cubit.dart';
 import 'package:ecommerce_app/features/home/logic/home_cubit/home_cubit.dart';
 import 'package:ecommerce_app/features/home/ui/widget/home/category_tab_view.dart';

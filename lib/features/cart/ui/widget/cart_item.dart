@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ecommerce_app/core/widget/spacing.dart';
 import 'package:ecommerce_app/features/cart/logic/cart/cart_cubit.dart';
@@ -25,11 +27,7 @@ class CartItemWidget extends StatelessWidget {
               color: theme.colorScheme.surfaceVariant.withOpacity(0.3),
               borderRadius: BorderRadius.circular(16),
             ),
-            child: CachedNetworkImage(
-              imageUrl: cartItem.product.imgUrl,
-              height: 115.h,
-              width: 110.w,
-            ),
+            child: _buildImage(cartItem.product.imgUrl),
           ),
           horizontalSpace(12),
           Expanded(
@@ -57,7 +55,8 @@ class CartItemWidget extends StatelessWidget {
                           return SizedBox(
                             width: 20.w,
                             height: 20.h,
-                            child: const CircularProgressIndicator(strokeWidth: 2),
+                            child:
+                                const CircularProgressIndicator(strokeWidth: 2),
                           );
                         }
                         return IconButton(
@@ -129,6 +128,27 @@ class CartItemWidget extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Widget _buildImage(String url) {
+    if (url.startsWith("http")) {
+      return CachedNetworkImage(
+        imageUrl: url,
+        height: 115.h,
+        width: 110.w,
+        placeholder: (_, __) =>
+            const Center(child: CircularProgressIndicator()),
+        errorWidget: (_, __, ___) => const Icon(Icons.broken_image),
+      );
+    } else {
+      return Image.file(
+        File(url),
+        height: 115.h,
+        width: 110.w,
+        fit: BoxFit.cover,
+        errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+      );
+    }
   }
 
   void _showDeleteDialog(BuildContext context, CartCubit cubit) {

@@ -1,4 +1,3 @@
-
 import 'package:ecommerce_app/core/helper/constants.dart';
 import 'package:ecommerce_app/core/services/auth_services.dart';
 import 'package:ecommerce_app/core/services/firestore_services.dart';
@@ -11,6 +10,10 @@ class AuthCubit extends Cubit<AuthState> {
   AuthCubit() : super(AuthInitial());
   final AuthServices authServices = AuthServicesImpl();
   final firestoreServices = FirestoreServices.instance;
+  UserData? get user {
+    final s = state;
+    return s is AuthSuccess ? s.userData : null;
+  }
 
   Future<void> loginWithEmailAndPassword(String email, String password) async {
     emit(AuthLoading());
@@ -133,31 +136,32 @@ class AuthCubit extends Cubit<AuthState> {
       createdAt: DateTime.now().toIso8601String(),
     );
   }
-    void checkAuth() async {
-      emit(AuthChecking()); // حالة جديدة للتحقق الأولي
-      final user = authServices.currentUser();
-      if (user != null) {
-        try {
-          final userData = await firestoreServices.getDocument<UserData>(
-            path: ApiPaths.users(user.uid),
-            builder: (data, id) => UserData.fromMap(data, id),
-          );
-          emit(AuthSuccess(userData: userData));
-        } catch (e) {
-          emit(AuthError(message: "Error fetching user data: $e"));
-        }
-      } else {
-        emit(AuthInitial()); // لا يوجد مستخدم مسجل دخول
-      }
-    }
 
-    Future<void> logOut() async {
-      emit(AuthLogingout());
+  void checkAuth() async {
+    emit(AuthChecking()); // حالة جديدة للتحقق الأولي
+    final user = authServices.currentUser();
+    if (user != null) {
       try {
-        await authServices.logOut();
-        emit(AuthLogedout());
+        final userData = await firestoreServices.getDocument<UserData>(
+          path: ApiPaths.users(user.uid),
+          builder: (data, id) => UserData.fromMap(data, id),
+        );
+        emit(AuthSuccess(userData: userData));
       } catch (e) {
-        emit(AuthLogoutError(message: "Error: $e"));
+        emit(AuthError(message: "Error fetching user data: $e"));
       }
+    } else {
+      emit(AuthInitial()); // لا يوجد مستخدم مسجل دخول
     }
+  }
+
+  Future<void> logOut() async {
+    emit(AuthLogingout());
+    try {
+      await authServices.logOut();
+      emit(AuthLogedout());
+    } catch (e) {
+      emit(AuthLogoutError(message: "Error: $e"));
+    }
+  }
 }

@@ -1,67 +1,110 @@
-import 'package:ecommerce_app/core/utils/app_colors.dart';
-import 'package:ecommerce_app/core/widget/spacing.dart';
 import 'package:ecommerce_app/features/auth/data/user_data.dart';
 import 'package:flutter/material.dart';
 
 class IdentifyUserWidget extends StatelessWidget {
-  const IdentifyUserWidget({
-    super.key,
-    required this.user,
-  });
-
+  const IdentifyUserWidget({super.key, required this.user});
   final UserData user;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
       decoration: BoxDecoration(
-        color: theme.cardColor, // يدعم Light/Dark
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: theme.shadowColor.withOpacity(0.2),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: theme.colorScheme.surfaceVariant.withOpacity(0.4),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: theme.colorScheme.outline.withOpacity(0.15),
+        ),
       ),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              const Icon(Icons.person, color: AppColors.kPrimaryColor),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  user.username,
-                  style: theme.textTheme.titleMedium?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-            ],
+          _InfoRow(
+            icon: Icons.person_rounded,
+            label: 'Username',
+            value: user.username,
+            theme: theme,
           ),
-          verticalSpace(12),
-          Row(
-            children: [
-              const Icon(Icons.email, color: AppColors.kPrimaryColor),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  user.email,
-                  style: theme.textTheme.bodyMedium?.copyWith(
-                    color: theme.textTheme.bodyMedium?.color,
-                  ),
-                ),
-              ),
-            ],
+          Divider(
+            height: 24,
+            color: theme.dividerColor.withOpacity(0.4),
+          ),
+          _InfoRow(
+            icon: Icons.email_rounded,
+            label: 'Email',
+            value: user.email,
+            theme: theme,
+          ),
+          Divider(
+            height: 24,
+            color: theme.dividerColor.withOpacity(0.4),
+          ),
+          _InfoRow(
+            icon: Icons.verified_user_rounded,
+            label: 'Role',
+            value: user.role,
+            theme: theme,
+            valueColor: theme.colorScheme.primary,
           ),
         ],
       ),
+    );
+  }
+}
+
+class _InfoRow extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+  final ThemeData theme;
+  final Color? valueColor;
+
+  const _InfoRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+    required this.theme,
+    this.valueColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: theme.colorScheme.primary.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: theme.colorScheme.primary, size: 18),
+        ),
+        const SizedBox(width: 14),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: theme.textTheme.labelSmall?.copyWith(
+                  color: theme.hintColor,
+                  letterSpacing: 0.5,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w600,
+                  color: valueColor,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

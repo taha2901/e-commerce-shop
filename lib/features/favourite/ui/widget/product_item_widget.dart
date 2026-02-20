@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:ecommerce_app/core/widget/spacing.dart';
 import 'package:ecommerce_app/features/favourite/logic/cubit/favourite_cubit.dart';
@@ -7,7 +9,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class ProductItemWidget extends StatelessWidget {
   final dynamic product;
   final FavouriteCubit favoriteCubit;
-  
+
   const ProductItemWidget({
     super.key,
     required this.product,
@@ -47,26 +49,36 @@ class ProductItemWidget extends StatelessWidget {
   Widget _buildProductImage(ThemeData theme) {
     return ClipRRect(
       borderRadius: BorderRadius.circular(12.r),
-      child: CachedNetworkImage(
+      child: buildProductImage(
+        product.imgUrl,
         width: 60.w,
         height: 60.h,
-        imageUrl: product.imgUrl,
         fit: BoxFit.cover,
-        placeholder: (context, url) => Center(
-          child: CircularProgressIndicator(
-            strokeWidth: 2,
-            valueColor: AlwaysStoppedAnimation<Color>(
-              theme.colorScheme.primary.withOpacity(0.5),
-            ),
-          ),
-        ),
-        errorWidget: (context, url, error) => Icon(
-          Icons.image_not_supported_outlined,
-          color: theme.disabledColor,
-          size: 28.sp,
-        ),
       ),
     );
+  }
+
+  Widget buildProductImage(String url,
+      {double? width, double? height, BoxFit? fit}) {
+    if (url.startsWith("http")) {
+      return CachedNetworkImage(
+        imageUrl: url,
+        width: width,
+        height: height,
+        fit: fit ?? BoxFit.cover,
+        placeholder: (_, __) =>
+            const Center(child: CircularProgressIndicator()),
+        errorWidget: (_, __, ___) => const Icon(Icons.broken_image),
+      );
+    } else {
+      return Image.file(
+        File(url),
+        width: width,
+        height: height,
+        fit: fit ?? BoxFit.cover,
+        errorBuilder: (_, __, ___) => const Icon(Icons.broken_image),
+      );
+    }
   }
 
   Widget _buildProductInfo(ThemeData theme) {
