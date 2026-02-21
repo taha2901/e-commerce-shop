@@ -50,13 +50,14 @@ This app provides a complete shopping experience with multilingual support, pers
 git clone https://github.com/taha2901/e-commerce-shop.git
 
 # Navigate to project folder / الانتقال للمجلد
-cd ecommerce_app
+cd e-commerce-shop
 
 # Install dependencies / تثبيت الحزم
 flutter pub get
 
 # Run the app / تشغيل التطبيق
 flutter run
+
 
 
 
