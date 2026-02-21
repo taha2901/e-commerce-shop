@@ -27,10 +27,10 @@ This app provides a complete shopping experience with multilingual support, pers
 
 ## 📸 Mockups / الصور
 
-![App Screenshot](assets/images\20250830_163102.png)
-![App Screenshot](assets/images\20250830_163135.png)
-![App Screenshot](assets/images\20250830_163155.png)
-![App Screenshot](assets/images\20250830_163245.png)
+![App Screenshot](assets/images/20250830_163102.png)
+![App Screenshot](assets/images/20250830_163135.png)
+![App Screenshot](assets/images/20250830_163155.png)
+![App Screenshot](assets/images/20250830_163245.png)
 
 ---
 
@@ -55,5 +55,6 @@ flutter pub get
 
 # Run the app / تشغيل التطبيق
 flutter run
+
 
 
