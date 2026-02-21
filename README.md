@@ -42,7 +42,7 @@ This app provides a complete shopping experience with multilingual support, pers
 
 ```bash
 # Clone the repository / استنساخ المشروع
-git clone https://github.com/username/ecommerce_app.git
+git clone https://github.com/taha2901/e-commerce-shop.git
 
 # Navigate to project folder / الانتقال للمجلد
 cd ecommerce_app
@@ -52,3 +52,4 @@ flutter pub get
 
 # Run the app / تشغيل التطبيق
 flutter run
+
